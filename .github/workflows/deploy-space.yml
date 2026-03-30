@@ -1,6 +1,8 @@
 name: Deploy HF Space
 
 on:
+  push:
+    branches: ["main"]
   workflow_dispatch:
     inputs:
       repo_id:
@@ -24,7 +26,7 @@ jobs:
     timeout-minutes: 30
     env:
       HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      HF_SPACE_REPO_ID: ${{ inputs.repo_id || vars.HF_SPACE_REPO_ID }}
+      HF_SPACE_REPO_ID: ${{ inputs.repo_id || vars.HF_SPACE_REPO_ID || 'Rohan556/openenv-code-review-arena' }}
 
     steps:
       - uses: actions/checkout@v6.0.2
@@ -37,21 +39,26 @@ jobs:
         uses: astral-sh/setup-uv@v8.0.0
 
       - name: Check deployment configuration
+        id: config
         run: |
           if [ -z "${HF_TOKEN}" ]; then
-            echo "::error::Missing repository secret HF_TOKEN"
-            exit 1
+            echo "deploy_enabled=false" >> "$GITHUB_OUTPUT"
+            echo "HF_TOKEN is not configured; skipping deploy."
+            exit 0
           fi
           if [ -z "${HF_SPACE_REPO_ID}" ]; then
             echo "::error::Missing workflow input repo_id and repository variable HF_SPACE_REPO_ID"
             exit 1
           fi
+          echo "deploy_enabled=true" >> "$GITHUB_OUTPUT"
           echo "Deploying to ${HF_SPACE_REPO_ID}"
 
       - name: Validate local environment structure
+        if: steps.config.outputs.deploy_enabled == 'true'
         run: uvx --from git+https://github.com/meta-pytorch/OpenEnv.git openenv validate --verbose
 
       - name: Push to Hugging Face Space
+        if: steps.config.outputs.deploy_enabled == 'true'
         run: |
           args=(. --repo-id "${HF_SPACE_REPO_ID}")
           if [ "${{ inputs.private }}" = "true" ]; then

@@ -28,6 +28,10 @@ class TaskStore:
     def task_ids(self) -> list[str]:
         return sorted(self._by_id)
 
+    @property
+    def all_tasks(self) -> list[ReviewTask]:
+        return list(self._tasks)
+
     def get(self, task_id: str) -> ReviewTask:
         try:
             return self._by_id[task_id]
@@ -51,4 +55,3 @@ class TaskStore:
 
         rng = random.Random(seed)
         return rng.choice(candidates)
-

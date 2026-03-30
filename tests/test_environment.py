@@ -66,3 +66,7 @@ def test_fastapi_endpoints_expose_openenv_contract():
     assert "observation" in payload
     assert "state" in payload
 
+    tasks = client.get("/tasks")
+    assert tasks.status_code == 200
+    task_items = tasks.json()
+    assert any(item["id"] == "sql_injection_report_filters" for item in task_items)

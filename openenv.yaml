@@ -4,4 +4,93 @@ type: space
 runtime: fastapi
 app: server.app:app
 port: 8000
-
+description: "Interactive PR code review environment for security, correctness, and false-positive benchmarking."
+tasks:
+  - id: authz_admin_export
+    description: "Broken access control on tenant audit export."
+    difficulty: medium
+  - id: sql_injection_report_filters
+    description: "SQL injection in a revenue report helper."
+    difficulty: medium
+  - id: path_traversal_receipts
+    description: "Filesystem path traversal in receipt download handling."
+    difficulty: medium
+  - id: ssrf_webhook_preview
+    description: "Server-side request forgery in webhook previewing."
+    difficulty: hard
+  - id: jwt_exp_disabled
+    description: "Subtle JWT validation regressions in token parsing."
+    difficulty: hard
+  - id: wallet_race_condition
+    description: "Concurrent money movement bug in wallet transfers."
+    difficulty: hard
+  - id: frontend_xss_preview
+    description: "Client-side XSS via unsanitized markdown preview."
+    difficulty: medium
+  - id: safe_logging_refactor
+    description: "Clean refactor task designed to punish false positives."
+    difficulty: easy
+action_space:
+  type: object
+  description: "Structured review interaction over changed files and final rubric submission."
+  properties:
+    action_type:
+      type: string
+      enum: [list_files, inspect_file, search_code, submit_review]
+    file_path:
+      type: string
+      description: "Changed file path to inspect."
+    view_mode:
+      type: string
+      enum: [diff, full]
+    start_line:
+      type: integer
+    end_line:
+      type: integer
+    query:
+      type: string
+    findings:
+      type: array
+      items:
+        type: object
+        properties:
+          file_path:
+            type: string
+          line_start:
+            type: integer
+          line_end:
+            type: integer
+          severity:
+            type: string
+            enum: [low, medium, high, critical]
+          category:
+            type: string
+          title:
+            type: string
+          explanation:
+            type: string
+          confidence:
+            type: number
+  required: [action_type]
+observation_space:
+  type: object
+  description: "Episode state, rendered code context, and final scorecard."
+  properties:
+    reward:
+      type: number
+    done:
+      type: boolean
+    phase:
+      type: string
+    task_id:
+      type: string
+    difficulty:
+      type: string
+    displayed_content:
+      type: string
+    action_result:
+      type: string
+    attempts_remaining:
+      type: integer
+    scorecard:
+      type: object

@@ -99,6 +99,14 @@ The final score combines:
 
 This makes the reward function significantly harder to game than simple exact-string matching.
 
+## Baseline scores
+
+| Task difficulty | Random agent | Zero-shot LLM | Strong agent |
+|---|---:|---:|---:|
+| Easy (clean refactor) | ~0.45 | ~0.72 | ~0.90 |
+| Medium (single vuln) | ~0.10 | ~0.51 | ~0.80 |
+| Hard (multi-vuln) | ~0.04 | ~0.38 | ~0.72 |
+
 ## Local development
 
 ```bash
@@ -133,6 +141,7 @@ The workflow will:
 3. push the current repository contents with `openenv push`
 
 You can also override the target repo id manually when dispatching the workflow.
+The repo also supports automatic HF redeploys on `main` when `HF_TOKEN` is configured.
 
 ## Example usage
 

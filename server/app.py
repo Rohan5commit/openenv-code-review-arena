@@ -12,9 +12,11 @@ except Exception as exc:  # pragma: no cover
 try:
     from ..models import CodeReviewAction, CodeReviewObservation
     from .code_review_environment import CodeReviewEnvironment
+    from .task_store import TaskStore
 except ImportError:
     from code_review_env.models import CodeReviewAction, CodeReviewObservation
     from code_review_env.server.code_review_environment import CodeReviewEnvironment
+    from code_review_env.server.task_store import TaskStore
 
 
 app = create_app(
@@ -24,6 +26,20 @@ app = create_app(
     env_name="code_review_env",
     max_concurrent_envs=4,
 )
+
+
+@app.get("/tasks")
+async def list_tasks() -> list[dict[str, str]]:
+    store = TaskStore()
+    return [
+        {
+            "id": task.id,
+            "difficulty": task.difficulty,
+            "title": task.title,
+            "description": task.pr_title,
+        }
+        for task in store.all_tasks
+    ]
 
 
 def main(host: str = "0.0.0.0", port: int = 8000) -> None:
