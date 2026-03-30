@@ -12,7 +12,7 @@ except Exception as exc:  # pragma: no cover
 try:
     from ..models import CodeReviewAction, CodeReviewObservation
     from .code_review_environment import CodeReviewEnvironment
-except ModuleNotFoundError:
+except ImportError:
     from code_review_env.models import CodeReviewAction, CodeReviewObservation
     from code_review_env.server.code_review_environment import CodeReviewEnvironment
 

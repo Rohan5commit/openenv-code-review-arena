@@ -1,3 +1,19 @@
+---
+title: Code Review Arena Environment Server
+emoji: "🧪"
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+app_port: 8000
+base_path: /web
+tags:
+  - openenv
+  - reinforcement-learning
+  - code-review
+  - security
+---
+
 # Code Review Arena for OpenEnv
 
 `code_review_env` is a production-style OpenEnv benchmark for pull-request review.
