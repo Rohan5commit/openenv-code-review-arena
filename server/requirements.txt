@@ -1,0 +1,2 @@
+openenv-core[core]>=0.2.2,<1.0.0
+
