@@ -67,4 +67,17 @@ jobs:
           if [ "${{ inputs.create_pr }}" = "true" ]; then
             args+=(--create-pr)
           fi
-          uvx --from git+https://github.com/meta-pytorch/OpenEnv.git openenv push "${args[@]}"
+
+          for attempt in 1 2 3; do
+            echo "Hugging Face push attempt ${attempt}/3"
+            if uvx --from git+https://github.com/meta-pytorch/OpenEnv.git openenv push "${args[@]}"; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 3 ]; then
+              echo "Push failed, retrying after backoff..."
+              sleep $((attempt * 20))
+            fi
+          done
+
+          echo "::error::Failed to push to Hugging Face Space after 3 attempts"
+          exit 1
