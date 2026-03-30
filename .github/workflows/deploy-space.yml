@@ -1,0 +1,63 @@
+name: Deploy HF Space
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_id:
+        description: "Hugging Face repo id (username/space-name). Leave blank to use repo variable HF_SPACE_REPO_ID."
+        required: false
+        type: string
+      private:
+        description: "Create or update the target Space as private"
+        required: false
+        default: false
+        type: boolean
+      create_pr:
+        description: "Upload via Pull Request instead of direct push"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_SPACE_REPO_ID: ${{ inputs.repo_id || vars.HF_SPACE_REPO_ID }}
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.0.0
+
+      - name: Check deployment configuration
+        run: |
+          if [ -z "${HF_TOKEN}" ]; then
+            echo "::error::Missing repository secret HF_TOKEN"
+            exit 1
+          fi
+          if [ -z "${HF_SPACE_REPO_ID}" ]; then
+            echo "::error::Missing workflow input repo_id and repository variable HF_SPACE_REPO_ID"
+            exit 1
+          fi
+          echo "Deploying to ${HF_SPACE_REPO_ID}"
+
+      - name: Validate local environment structure
+        run: uvx --from git+https://github.com/meta-pytorch/OpenEnv.git openenv validate --verbose
+
+      - name: Push to Hugging Face Space
+        run: |
+          args=(. --repo-id "${HF_SPACE_REPO_ID}")
+          if [ "${{ inputs.private }}" = "true" ]; then
+            args+=(--private)
+          fi
+          if [ "${{ inputs.create_pr }}" = "true" ]; then
+            args+=(--create-pr)
+          fi
+          uvx --from git+https://github.com/meta-pytorch/OpenEnv.git openenv push "${args[@]}"

@@ -98,6 +98,26 @@ openenv validate --verbose
 openenv validate http://127.0.0.1:8000
 ```
 
+## GitHub-only deployment to Hugging Face Spaces
+
+This repo is set up so deployment can be triggered from GitHub Actions instead of
+from a local machine.
+
+Add these repository settings in GitHub:
+
+- Secret: `HF_TOKEN`
+- Variable: `HF_SPACE_REPO_ID`
+  Example: `your-hf-username/openenv-code-review-arena`
+
+Then run the `Deploy HF Space` workflow from the GitHub Actions tab.
+The workflow will:
+
+1. validate the environment again
+2. create the Space if it does not exist
+3. push the current repository contents with `openenv push`
+
+You can also override the target repo id manually when dispatching the workflow.
+
 ## Example usage
 
 ```python
@@ -159,4 +179,3 @@ openenv push --repo-id <your-hf-space>
 No API keys are required for the benchmark itself. If you later want a private rubric
 bundle for leaderboard use, you can point `CODE_REVIEW_TASK_BUNDLE_PATH` at a private
 JSON file without changing the environment interface.
-
