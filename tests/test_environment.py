@@ -1,6 +1,11 @@
 from fastapi.testclient import TestClient
 
-from inference import emit_block
+from inference import (
+    BASELINE_FINDINGS,
+    choose_files_to_inspect,
+    emit_block,
+    load_llm_settings,
+)
 from code_review_env.models import CodeReviewAction, ReviewFinding
 from code_review_env.server.app import app
 from code_review_env.server.code_review_environment import CodeReviewEnvironment
@@ -84,3 +89,43 @@ def test_inference_emits_structured_stdout(capsys):
         "[STEP] step=1 reward=-0.005 done=False",
         "[END] task=sql_injection_report_filters score=0.9355 steps=2",
     ]
+
+
+def test_load_llm_settings_prefers_api_key(monkeypatch):
+    monkeypatch.setenv("API_BASE_URL", "https://proxy.example/v1")
+    monkeypatch.setenv("MODEL_NAME", "openai/gpt-4.1-mini")
+    monkeypatch.setenv("API_KEY", "primary-key")
+    monkeypatch.setenv("HF_TOKEN", "fallback-token")
+
+    assert load_llm_settings() == (
+        "https://proxy.example/v1",
+        "openai/gpt-4.1-mini",
+        "primary-key",
+    )
+
+
+def test_load_llm_settings_accepts_hf_token_fallback(monkeypatch):
+    monkeypatch.setenv("API_BASE_URL", "https://proxy.example/v1")
+    monkeypatch.setenv("MODEL_NAME", "openai/gpt-4.1-mini")
+    monkeypatch.delenv("API_KEY", raising=False)
+    monkeypatch.setenv("HF_TOKEN", "fallback-token")
+
+    assert load_llm_settings() == (
+        "https://proxy.example/v1",
+        "openai/gpt-4.1-mini",
+        "fallback-token",
+    )
+
+
+def test_choose_files_to_inspect_prefers_llm_paths_then_findings():
+    env = CodeReviewEnvironment()
+    observation = env.reset(task_id="sql_injection_report_filters")
+    findings = [ReviewFinding(**item) for item in BASELINE_FINDINGS["sql_injection_report_filters"]]
+
+    files = choose_files_to_inspect(
+        observation,
+        llm_focus_files=["api/routes/reports.py", "not/a/file.py"],
+        findings=findings,
+    )
+
+    assert files == ["api/routes/reports.py", "analytics/reporting.py"]

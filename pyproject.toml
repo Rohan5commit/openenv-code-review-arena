@@ -12,6 +12,7 @@ license = { text = "MIT" }
 authors = [{ name = "Rohan5commit" }]
 dependencies = [
     "openenv-core[core]>=0.2.2,<1.0.0",
+    "openai>=2.30.0,<3.0.0",
     "pydantic>=2.7,<3.0",
 ]
 
@@ -33,4 +34,3 @@ package-dir = { "code_review_env" = ".", "code_review_env.server" = "server" }
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-

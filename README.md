@@ -122,6 +122,18 @@ openenv validate --verbose
 openenv validate http://127.0.0.1:8000
 ```
 
+Run the hackathon baseline inference script with the injected LiteLLM proxy:
+
+```bash
+API_BASE_URL=https://your-litellm-proxy/v1 \
+API_KEY=... \
+MODEL_NAME=... \
+uv run python inference.py
+```
+
+`inference.py` uses the OpenAI client against `API_BASE_URL`, emits structured
+`[START]` / `[STEP]` / `[END]` logs, and evaluates every published task id.
+
 ## GitHub-only deployment to Hugging Face Spaces
 
 This repo is set up so deployment can be triggered from GitHub Actions instead of
