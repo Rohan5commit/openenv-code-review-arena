@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from typing import Any
 
 try:
     from code_review_env import CodeReviewAction, CodeReviewEnv, ReviewFinding
@@ -15,15 +16,26 @@ except ImportError:  # pragma: no cover
 DEFAULT_BASE_URL = "https://rohan556-openenv-code-review-arena.hf.space"
 
 
+def emit_block(tag: str, **fields: Any) -> None:
+    """Print a single structured stdout line for the hackathon validator."""
+
+    serialized = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"[{tag}] {serialized}", flush=True)
+
+
 async def main() -> None:
     base_url = os.getenv("CODE_REVIEW_ENV_URL", DEFAULT_BASE_URL)
 
     async with CodeReviewEnv(base_url=base_url) as env:
         result = await env.reset(task_id="sql_injection_report_filters")
-        print(f"task={result.observation.task_id}")
-        print(f"pr={result.observation.pr_title}")
+        emit_block(
+            "START",
+            task=result.observation.task_id,
+            difficulty=result.observation.difficulty,
+            repo=result.observation.repo_name,
+        )
 
-        await env.step(
+        inspection = await env.step(
             CodeReviewAction(
                 action_type="inspect_file",
                 file_path="analytics/reporting.py",
@@ -31,6 +43,14 @@ async def main() -> None:
                 start_line=1,
                 end_line=80,
             )
+        )
+        emit_block(
+            "STEP",
+            step=1,
+            action="inspect_file",
+            reward=inspection.reward,
+            done=inspection.done,
+            phase=inspection.observation.phase,
         )
 
         graded = await env.step(
@@ -54,14 +74,27 @@ async def main() -> None:
                 ],
             )
         )
+        emit_block(
+            "STEP",
+            step=2,
+            action="submit_review",
+            reward=graded.reward,
+            done=graded.done,
+            phase=graded.observation.phase,
+        )
 
         scorecard = graded.observation.scorecard
-        print(f"done={graded.done}")
         if scorecard is None:
             raise RuntimeError("Expected a scorecard after submit_review")
-        print(f"score={scorecard.overall_score}")
-        print(f"grade_band={scorecard.grade_band}")
-        print(scorecard.summary)
+        emit_block(
+            "END",
+            task=result.observation.task_id,
+            score=scorecard.overall_score,
+            steps=2,
+            grade=scorecard.grade_band,
+            matched=scorecard.matched_findings,
+            expected=scorecard.expected_findings,
+        )
 
 
 if __name__ == "__main__":

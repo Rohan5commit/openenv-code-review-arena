@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from inference import emit_block
 from code_review_env.models import CodeReviewAction, ReviewFinding
 from code_review_env.server.app import app
 from code_review_env.server.code_review_environment import CodeReviewEnvironment
@@ -70,3 +71,16 @@ def test_fastapi_endpoints_expose_openenv_contract():
     assert tasks.status_code == 200
     task_items = tasks.json()
     assert any(item["id"] == "sql_injection_report_filters" for item in task_items)
+
+
+def test_inference_emits_structured_stdout(capsys):
+    emit_block("START", task="sql_injection_report_filters", difficulty="medium")
+    emit_block("STEP", step=1, reward=-0.005, done=False)
+    emit_block("END", task="sql_injection_report_filters", score=0.9355, steps=2)
+
+    lines = capsys.readouterr().out.strip().splitlines()
+    assert lines == [
+        "[START] task=sql_injection_report_filters difficulty=medium",
+        "[STEP] step=1 reward=-0.005 done=False",
+        "[END] task=sql_injection_report_filters score=0.9355 steps=2",
+    ]
