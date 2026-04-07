@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openenv-code-review-env"
-version = "0.1.0"
+version = "0.1.1"
 description = "Production-grade OpenEnv code review benchmark with deterministic grading and realistic pull request tasks."
 readme = "README.md"
 requires-python = ">=3.11"

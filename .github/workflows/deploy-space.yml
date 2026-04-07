@@ -57,6 +57,13 @@ jobs:
         if: steps.config.outputs.deploy_enabled == 'true'
         run: uvx --from git+https://github.com/meta-pytorch/OpenEnv.git openenv validate --verbose
 
+      - name: Remove generated artifacts before packaging
+        if: steps.config.outputs.deploy_enabled == 'true'
+        run: |
+          git clean -fdX
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} +
+          find . -name '*.egg-info' -type d -prune -exec rm -rf {} +
+
       - name: Push to Hugging Face Space
         if: steps.config.outputs.deploy_enabled == 'true'
         run: |
