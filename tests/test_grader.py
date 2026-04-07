@@ -52,3 +52,16 @@ def test_clean_task_penalizes_false_positives():
     assert scorecard.overall_score < 0.75
     assert scorecard.false_positive_penalty > 0
 
+
+def test_clean_task_perfect_score_stays_below_one():
+    task = TaskStore().get("safe_logging_refactor")
+    scorecard = grade_submission(task, [], steps_used=1)
+
+    assert 0.0 < scorecard.overall_score < 1.0
+
+
+def test_bad_submission_score_stays_above_zero():
+    task = TaskStore().get("sql_injection_report_filters")
+    scorecard = grade_submission(task, [], steps_used=task.max_steps)
+
+    assert 0.0 < scorecard.overall_score < 1.0

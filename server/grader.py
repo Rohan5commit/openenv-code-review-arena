@@ -27,6 +27,8 @@ CATEGORY_ALIASES = {
     "race_condition": {"race_condition", "concurrency", "double_spend", "atomicity"},
     "xss": {"xss", "cross_site_scripting", "unsafe_html"},
 }
+MIN_OPEN_SCORE = 0.0001
+MAX_OPEN_SCORE = 0.9999
 
 
 @dataclass(frozen=True)
@@ -36,6 +38,10 @@ class MatchBreakdown:
     category_score: float
     severity_score: float
     semantic_score: float
+
+
+def clamp_open_score(value: float) -> float:
+    return min(MAX_OPEN_SCORE, max(MIN_OPEN_SCORE, value))
 
 
 def normalize_text(value: str) -> str:
@@ -218,6 +224,7 @@ def grade_submission(
     if not references:
         false_positive_penalty = min(1.0, 0.32 * len(findings))
         overall = max(0.0, 1.0 - false_positive_penalty - duplicate_penalty)
+        overall = clamp_open_score(overall)
         summary = (
             "Correctly identified that the refactor is clean."
             if not findings
@@ -299,6 +306,7 @@ def grade_submission(
         - 0.14 * missed_penalty
     )
     overall = max(0.0, min(1.0, overall))
+    overall = clamp_open_score(overall)
 
     summary = (
         f"Matched {len(assignments)} of {len(references)} reference findings. "
@@ -322,4 +330,3 @@ def grade_submission(
         assessments=ordered_assessments,
         missed_reference_ids=[reference.id for reference in unmatched_refs],
     )
-

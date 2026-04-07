@@ -38,6 +38,7 @@ DEFAULT_ENV_BASE_URLS = [
     "https://rohan556-openenv-code-review-arena.hf.space",
 ]
 STDOUT_BROKEN = False
+ERROR_SCORE = 0.0001
 
 BASELINE_FINDINGS: dict[str, list[dict[str, Any]]] = {
     "authz_admin_export": [
@@ -321,7 +322,7 @@ def emit_failed_task(task_id: str, step_number: int, expected: int) -> None:
     emit_block(
         "END",
         task=task_id,
-        score=0.0,
+        score=ERROR_SCORE,
         steps=safe_steps,
         grade="error",
         matched=0,

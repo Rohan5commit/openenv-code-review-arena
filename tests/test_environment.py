@@ -146,7 +146,7 @@ def test_emit_failed_task_prints_parseable_error_episode(capsys):
     lines = capsys.readouterr().out.strip().splitlines()
     assert lines == [
         "[STEP] step=1 action=error reward=0.0 done=True phase=error",
-        "[END] task=sql_injection_report_filters score=0.0 steps=1 grade=error matched=0 expected=1",
+        "[END] task=sql_injection_report_filters score=0.0001 steps=1 grade=error matched=0 expected=1",
     ]
 
 
